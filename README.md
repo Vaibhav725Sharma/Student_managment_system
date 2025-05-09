@@ -18,18 +18,18 @@ A full-featured **Student Management System** built with Python and Tkinter that
 
 ## 🗂️ Project Structure
 
-Result_Management_System-main/
-├── images/ # Image assets used in GUI
-├── course.py # Course management window
-├── create_db.py # Script to create the database
-├── dashboard.py # Main dashboard after login
-├── login.py # Login window
-├── register.py # Registration window
-├── report.py # Student report generation
-├── result.py # Result management
-├── student.py # Student information management
-├── rms.db # SQLite database file
-└── README.md # Project description
+- Result_Management_System-main/
+- ├── images/ # Image assets used in GUI
+- ├── course.py # Course management window
+- ├── create_db.py # Script to create the database
+- ├── dashboard.py # Main dashboard after login
+- ├── login.py # Login window
+- ├── register.py # Registration window
+- ├── report.py # Student report generation
+- ├── result.py # Result management
+- ├── student.py # Student information management
+- ├── rms.db # SQLite database file
+- └── README.md # Project description
 
 ---
 
@@ -58,8 +58,13 @@ Result_Management_System-main/
 2. **Install Required Packages**
 
 - Tkinter comes pre-installed with Python. If not:
+
+```bash
   pip install tk
+```
 
 3. **Run the Application**
 
-- python login.py
+```bash
+ python login.py
+```
