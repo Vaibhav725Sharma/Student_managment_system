@@ -56,9 +56,9 @@ Result_Management_System-main/
    cd Student_Management_System-main
    ```
 2. **Install Required Packages**
-   - Tkinter comes pre-installed with Python. If not:
 
-pip install tk
+- Tkinter comes pre-installed with Python. If not:
+  pip install tk
 
 3. **Run the Application**
 
