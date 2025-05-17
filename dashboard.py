@@ -70,7 +70,7 @@ class RMS:
         self.update_details()
 
     def update_details(self):
-        con = sqlite3.connect(database="rms.db")
+        con = sqlite3.connect(database="RMS.db")
         cur = con.cursor()
         try:
             cur.execute("select * from course")

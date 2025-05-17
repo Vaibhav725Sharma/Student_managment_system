@@ -11,6 +11,12 @@ class studentClass:
         self.root.config(bg="white")
         self.root.focus_force()
 
+        # Initialize course list BEFORE fetch_course call
+        self.course_list = []
+
+        # Fetch courses first to populate course_list
+        self.fetch_course()
+
         # Title
         title = Label(self.root, text="Manage Student Details", font=("goudy old style", 20, "bold"), bg="#033054", fg="white")
         title.grid(row=0, column=0, columnspan=4, pady=10)
@@ -21,7 +27,7 @@ class studentClass:
         # Variables for student details
         self.create_variables()
 
-        # Entry Fields
+        # Entry Fields (this uses self.course_list)
         self.create_entries()
 
         # Buttons
@@ -32,9 +38,6 @@ class studentClass:
 
         # Content Frame
         self.create_content_frame()
-
-        # Fetch courses
-        self.fetch_course()
 
         # Show all students in the table
         self.show()
@@ -193,146 +196,167 @@ class studentClass:
         cur = con.cursor()
         try:
             if self.var_roll.get() == "":
-                messagebox.showerror("Error", "Roll No. should be required", parent=self.root)
+                messagebox.showerror("Error", "Roll no must be required", parent=self.root)
             else:
-                cur.execute("select * from student where roll=?", (self.var_roll.get(),))
+                cur.execute("SELECT * FROM student WHERE roll=?", (self.var_roll.get(),))
                 row = cur.fetchone()
                 if row is None:
-                    messagebox.showerror("Error", "Please select student from the list first", parent=self.root)
+                    messagebox.showerror("Error", "Invalid Roll No", parent=self.root)
                 else:
                     op = messagebox.askyesno("Confirm", "Do you really want to delete?", parent=self.root)
-                    if op == TRUE:
-                        cur.execute("delete from student where roll=?", (self.var_roll.get(),))
+                    if op:
+                        cur.execute("DELETE FROM student WHERE roll=?", (self.var_roll.get(),))
                         con.commit()
-                        messagebox.showinfo("Delete", "Student record deleted successfully", parent=self.root)
+                        messagebox.showinfo("Deleted", "Student deleted successfully", parent=self.root)
                         self.clear()
         except Exception as ex:
-            messagebox.showerror("Error", f"Error due to: {str(ex)}", parent=self.root)
+            messagebox.showerror("Error", f"Error due to {str(ex)}", parent=self.root)
         finally:
             con.close()
-def update(self):
-    con = self.connect_db()
-    cur = con.cursor()
-    try:
-        if self.var_roll.get() == "" or self.var_name.get() == "":
-            messagebox.showerror("Error", "All fields are required", parent=self.root)
-        else:
-            cur.execute("select * from student where roll=?", (self.var_roll.get(),))
-            row = cur.fetchone()
-            if row is None:
-                messagebox.showerror("Error", "Please select student from the list first", parent=self.root)
+
+    def update(self):
+        con = self.connect_db()
+        cur = con.cursor()
+        try:
+            if self.var_roll.get() == "":
+                messagebox.showerror("Error", "Roll no must be required", parent=self.root)
             else:
-                cur.execute("""update student set name=?, email=?, gender=?, dob=?, contact=?, admission=?, course=?, state=?, city=?, pin=?, address=? where roll=?""",
-                            (self.var_name.get(), self.var_email.get(), self.var_gender.get(), self.var_dob.get(), self.var_contact.get(),
-                             self.var_a_date.get(), self.var_course.get(), self.var_state.get(), self.var_city.get(), self.var_pin.get(),
-                             self.txt_address.get("1.0", END), self.var_roll.get()))
-                con.commit()
-                messagebox.showinfo("Update", "Student record updated successfully", parent=self.root)
-                self.clear()
-    except Exception as ex:
-        messagebox.showerror("Error", f"Error due to: {str(ex)}", parent=self.root)
-    finally:
-        con.close()
-def show(self):
-    con = self.connect_db()
-    cur = con.cursor()
-    try:
-        cur.execute("select * from student")
-        rows = cur.fetchall()
-        if len(rows) != 0:
+                cur.execute("SELECT * FROM student WHERE roll=?", (self.var_roll.get(),))
+                row = cur.fetchone()
+                if row is None:
+                    messagebox.showerror("Error", "Invalid Roll No", parent=self.root)
+                else:
+                    cur.execute("""
+                        UPDATE student SET
+                        name=?, email=?, gender=?, dob=?, contact=?, admission=?, course=?, state=?, city=?, pin=?, address=?
+                        WHERE roll=?
+                    """, (
+                        self.var_name.get(),
+                        self.var_email.get(),
+                        self.var_gender.get(),
+                        self.var_dob.get(),
+                        self.var_contact.get(),
+                        self.var_a_date.get(),
+                        self.var_course.get(),
+                        self.var_state.get(),
+                        self.var_city.get(),
+                        self.var_pin.get(),
+                        self.txt_address.get("1.0", END).strip(),
+                        self.var_roll.get()
+                    ))
+                    con.commit()
+                    messagebox.showinfo("Updated", "Student details updated successfully", parent=self.root)
+                    self.show()
+        except Exception as ex:
+            messagebox.showerror("Error", f"Error due to {str(ex)}", parent=self.root)
+        finally:
+            con.close()
+
+    def add(self):
+        con = self.connect_db()
+        cur = con.cursor()
+        try:
+            if self.var_roll.get() == "":
+                messagebox.showerror("Error", "Roll No must be required", parent=self.root)
+            else:
+                cur.execute("SELECT * FROM student WHERE roll=?", (self.var_roll.get(),))
+                row = cur.fetchone()
+                if row is not None:
+                    messagebox.showerror("Error", "This roll no already assigned, try different", parent=self.root)
+                else:
+                    cur.execute("""
+                        INSERT INTO student (
+                            roll, name, email, gender, dob, contact, admission, course, state, city, pin, address
+                        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                    """, (
+                        self.var_roll.get(),
+                        self.var_name.get(),
+                        self.var_email.get(),
+                        self.var_gender.get(),
+                        self.var_dob.get(),
+                        self.var_contact.get(),
+                        self.var_a_date.get(),
+                        self.var_course.get(),
+                        self.var_state.get(),
+                        self.var_city.get(),
+                        self.var_pin.get(),
+                        self.txt_address.get("1.0", END).strip()
+                    ))
+                    con.commit()
+                    messagebox.showinfo("Success", "Student added successfully", parent=self.root)
+                    self.show()
+        except Exception as ex:
+            messagebox.showerror("Error", f"Error due to {str(ex)}", parent=self.root)
+        finally:
+            con.close()
+
+    def fetch_course(self):
+        con = self.connect_db()
+        cur = con.cursor()
+        try:
+            cur.execute("SELECT name FROM course")
+            rows = cur.fetchall()
+            if len(rows) > 0:
+                self.course_list = [row[0] for row in rows]
+            else:
+                self.course_list = []
+        except Exception as ex:
+            messagebox.showerror("Error", f"Error fetching course list: {str(ex)}", parent=self.root)
+        finally:
+            con.close()
+
+    def show(self):
+        con = self.connect_db()
+        cur = con.cursor()
+        try:
+            cur.execute("SELECT * FROM student")
+            rows = cur.fetchall()
             self.CourseTable.delete(*self.CourseTable.get_children())
             for row in rows:
-                self.CourseTable.insert("", END, values=row)
-            con.commit()
-    except Exception as ex:
-        messagebox.showerror("Error", f"Error due to: {str(ex)}", parent=self.root)
-    finally:
-        con.close()
+                self.CourseTable.insert('', END, values=row)
+        except Exception as ex:
+            messagebox.showerror("Error", f"Error fetching students: {str(ex)}", parent=self.root)
+        finally:
+            con.close()
 
-def search(self):
-    con = self.connect_db()
-    cur = con.cursor()
-    try:
-        cur.execute("select * from student where roll=?", (self.var_search.get(),))
-        row = cur.fetchone()
-        if row:
-            self.var_roll.set(row[0])
-            self.var_name.set(row[1])
-            self.var_email.set(row[2])
-            self.var_gender.set(row[3])
-            self.var_dob.set(row[4])
-            self.var_contact.set(row[5])
-            self.var_a_date.set(row[6])
-            self.var_course.set(row[7])
-            self.var_state.set(row[8])
-            self.var_city.set(row[9])
-            self.var_pin.set(row[10])
-            self.txt_address.delete("1.0", END)
-            self.txt_address.insert("1.0", row[11])
-        else:
-            messagebox.showerror("Error", "No record found", parent=self.root)
-    except Exception as ex:
-        messagebox.showerror("Error", f"Error due to: {str(ex)}", parent=self.root)
-    finally:
-        con.close()
-
-def fetch_course(self):
-    con = self.connect_db()
-    cur = con.cursor()
-    try:
-        cur.execute("select * from course")
-        rows = cur.fetchall()
-        if len(rows) != 0:
-            self.course_list = [row[1] for row in rows]
-    except Exception as ex:
-        messagebox.showerror("Error", f"Error due to: {str(ex)}", parent=self.root)
-    finally:
-        con.close()
-
-def add(self):
-    con = self.connect_db()
-    cur = con.cursor()
-    try:
-        if self.var_roll.get() == "" or self.var_name.get() == "":
-            messagebox.showerror("Error", "All fields are required", parent=self.root)
-        else:
-            cur.execute("select * from student where roll=?", (self.var_roll.get(),))
-            row = cur.fetchone()
+    def get_data(self, event):
+        try:
+            selected = self.CourseTable.focus()
+            data = self.CourseTable.item(selected)
+            row = data['values']
             if row:
-                messagebox.showerror("Error", "Student already exists", parent=self.root)
+                self.var_roll.set(row[0])
+                self.var_name.set(row[1])
+                self.var_email.set(row[2])
+                self.var_gender.set(row[3])
+                self.var_dob.set(row[4])
+                self.var_contact.set(row[5])
+                self.var_a_date.set(row[6])
+                self.var_course.set(row[7])
+                self.var_state.set(row[8])
+                self.var_city.set(row[9])
+                self.var_pin.set(row[10])
+                self.txt_address.delete("1.0", END)
+                self.txt_address.insert(END, row[11])
+                self.txt_roll.config(state='readonly')
+        except Exception as ex:
+            messagebox.showerror("Error", f"Error getting data: {str(ex)}", parent=self.root)
+
+    def search(self):
+        con = self.connect_db()
+        cur = con.cursor()
+        try:
+            if self.var_search.get() == "":
+                messagebox.showerror("Error", "Roll no must be required", parent=self.root)
             else:
-                cur.execute("""insert into student(roll, name, email, gender, dob, contact, admission, course, state, city, pin, address)
-                               values(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)""",
-                             (self.var_roll.get(), self.var_name.get(), self.var_email.get(), self.var_gender.get(),
-                              self.var_dob.get(), self.var_contact.get(), self.var_a_date.get(), self.var_course.get(),
-                              self.var_state.get(), self.var_city.get(), self.var_pin.get(), self.txt_address.get("1.0", END)))
-                con.commit()
-                messagebox.showinfo("Success", "Student added successfully", parent=self.root)
-                self.clear()
-    except Exception as ex:
-        messagebox.showerror("Error", f"Error due to: {str(ex)}", parent=self.root)
-    finally:
-        con.close()
-
-def get_data(self, ev):
-    f = self.CourseTable.focus()
-    content = self.CourseTable.item(f)
-    row = content["values"]
-    self.var_roll.set(row[0])
-    self.var_name.set(row[1])
-    self.var_email.set(row[2])
-    self.var_gender.set(row[3])
-    self.var_dob.set(row[4])
-    self.var_contact.set(row[5])
-    self.var_a_date.set(row[6])
-    self.var_course.set(row[7])
-    self.var_state.set(row[8])
-    self.var_city.set(row[9])
-    self.var_pin.set(row[10])
-    self.txt_address.delete("1.0", END)
-    self.txt_address.insert("1.0", row[11])
-
-if __name__ == "__main__":
-    root = Tk()
-    obj = studentClass(root)
-    root.mainloop()
+                cur.execute("SELECT * FROM student WHERE roll=?", (self.var_search.get(),))
+                row = cur.fetchone()
+                if row is None:
+                    messagebox.showerror("Error", "No record found", parent=self.root)
+                else:
+                    self.CourseTable.delete(*self.CourseTable.get_children())
+                    self.CourseTable.insert('', END, values=row)
+        except Exception as ex:
+            messagebox.showerror("Error", f"Error searching student: {str(ex)}", parent=self.root)
+        finally:
+            con.close()
