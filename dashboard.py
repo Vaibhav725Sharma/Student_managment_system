@@ -63,7 +63,7 @@ class RMS:
 
         #====footer====
         footer = Label(self.root,
-                       text="SRMS:-Student Result Management System\nContact Us For Any Technical Issue: 8010xxxx08 or huzzu0812@gmail.com",
+                       text="SRMS:-Student Result Management System\nContact Us For Any Technical Issue: 72528**551 or vaibhav.sharma@gmail.com",
                        font=("goudy old style", 15), bg="#262626", fg="white")
         footer.pack(side=BOTTOM, fill=X)
 
